@@ -7,12 +7,13 @@ RUN corepack enable
 FROM base AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # ── build ─────────────────────────────────────────────────────────────────────
 FROM deps AS builder
 WORKDIR /app
 COPY . .
+RUN pnpm tsoa
 RUN pnpm build
 
 # ── production ────────────────────────────────────────────────────────────────
