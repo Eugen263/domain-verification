@@ -22,9 +22,10 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # ── production ────────────────────────────────────────────────────────────────
-FROM node:20-slim AS runner
+FROM base AS runner
 WORKDIR /app
 
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/src ./src
