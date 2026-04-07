@@ -1,0 +1,41 @@
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-domain_user}
+      DB_PASSWORD: ${DB_PASSWORD:-domain_pass}
+      DB_NAME: ${DB_NAME:-domain_verification}
+      DOMAIN_VERIFICATION_TTL: ${DOMAIN_VERIFICATION_TTL:-3600}
+      DOMAIN_VERIFICATION_WORKER_POOL_SIZE: ${DOMAIN_VERIFICATION_WORKER_POOL_SIZE:-50}
+      DNS_SERVERS: ${DNS_SERVERS:-1.1.1.1}
+      RATELIMIT_MAX: ${RATELIMIT_MAX:-60}
+      RATELIMIT_WINDOW_MS: ${RATELIMIT_WINDOW_MS:-60000}
+      WEBHOOK_URL: ${WEBHOOK_URL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${DB_USER:-domain_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-domain_pass}
+      POSTGRES_DB: ${DB_NAME:-domain_verification}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-domain_user} -d ${DB_NAME:-domain_verification} -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

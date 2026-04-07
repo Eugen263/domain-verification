@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "esModuleInterop": true,
+    "target": "es2022",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "sourceMap": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "lib": ["es2022"],
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "strictPropertyInitialization": false,
+    "ignoreDeprecations": "6.0",
+    "skipLibCheck": true,
+    "paths": {
+      "@app/*": ["src/*"]
+    }
+  },
+  "exclude": ["node_modules/**/*"],
+  "include": ["src"]
+}
