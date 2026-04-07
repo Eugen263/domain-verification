@@ -3,7 +3,7 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
-# ── deps ──────────────────────────────────────────────────────────────────────
+# ── deps (all) ────────────────────────────────────────────────────────────────
 FROM base AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
@@ -13,16 +13,19 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 FROM deps AS builder
 WORKDIR /app
 COPY . .
-RUN pnpm tsoa
 RUN pnpm build
 
+# ── prod deps only ────────────────────────────────────────────────────────────
+FROM base AS prod-deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+
 # ── production ────────────────────────────────────────────────────────────────
-FROM base AS runner
+FROM node:20-slim AS runner
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --prod
-
+COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/src/generated/swagger.json ./src/generated/swagger.json
 COPY --from=builder /app/migrations ./migrations
