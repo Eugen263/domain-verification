@@ -1,8 +1,14 @@
 #!/bin/sh
 set -e
 
-echo "Running database migrations..."
-node --import tsx/esm node_modules/typeorm/cli.js migration:run -d dist/config/database.js
+echo "Waiting for postgres..."
 
-echo "Starting application..."
-exec node --import tsx/esm dist/index.js
+until nc -z "$DB_HOST" "$DB_PORT"; do
+  sleep 1
+done
+
+echo "Running migrations..."
+pnpm migration:run:prod
+
+echo "Starting server..."
+exec pnpm start
